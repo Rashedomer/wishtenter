@@ -27,6 +27,14 @@ try {
   console.warn('\n⚠️  Upload URL fix skipped (non-fatal):', err.message || err);
 }
 
+if (process.env.ENSURE_ADMIN_ON_START === 'true') {
+  try {
+    run('node scripts/ensure-admin.js', 'Ensuring admin account (ENSURE_ADMIN_ON_START)');
+  } catch (err) {
+    console.warn('\n⚠️  Admin ensure skipped (non-fatal):', err.message || err);
+  }
+}
+
 // fix-upload-urls reloads .env and may restore localhost FRONTEND_URL from server/.env
 const { normalizeFrontendUrl } = require('../config/loadEnv');
 normalizeFrontendUrl();

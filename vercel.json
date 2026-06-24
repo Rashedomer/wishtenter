@@ -2,6 +2,14 @@
   "framework": "vite",
   "buildCommand": "npm run vercel-build",
   "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/(favicon.ico|favicon.svg|favicon-32.png|logo.jpeg|pwa-icon-.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/media/:path*",

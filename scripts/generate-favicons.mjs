@@ -45,11 +45,11 @@ await resize(192, path.join(publicDir, 'pwa-icon-192.png'));
 await resize(192, path.join(publicDir, 'pwa-icon-192.jpeg'), 'jpeg');
 await resize(512, path.join(publicDir, 'pwa-icon-512.jpeg'), 'jpeg');
 
-const logoBase64 = fs.readFileSync(logo).toString('base64');
+const logoBase64 = (await sharp(logo).resize(64, 64, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 1 } }).png().toBuffer()).toString('base64');
 fs.writeFileSync(
   path.join(publicDir, 'favicon.svg'),
-  `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" role="img" aria-label="Wishtenter">
-  <image width="64" height="64" href="data:image/jpeg;base64,${logoBase64}"/>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Wishtenter">
+  <image width="64" height="64" href="data:image/png;base64,${logoBase64}"/>
 </svg>
 `
 );

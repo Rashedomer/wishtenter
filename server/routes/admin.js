@@ -10,6 +10,7 @@ const {
   getPlatformAnalytics,
   deleteCreator,
   clearCreatorMedia,
+  getAdminAccount,
   changeAdminEmail,
   changeAdminPassword,
 } = require('../controllers/adminController');
@@ -20,7 +21,7 @@ const prisma = require('../prisma/client');
 const adminOnly = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
-    if (user.role !== 'ADMIN') {
+    if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({ message: 'Admin access required' });
     }
     next();
@@ -40,6 +41,7 @@ router.get('/creators', auth, adminOnly, getAllCreators);
 router.get('/analytics', auth, adminOnly, getPlatformAnalytics);
 router.delete('/creators/:id', auth, adminOnly, deleteCreator);
 router.put('/creators/:id/clear-media', auth, adminOnly, clearCreatorMedia);
+router.get('/account', auth, adminOnly, getAdminAccount);
 router.put('/account/email', auth, adminOnly, changeAdminEmail);
 router.put('/account/password', auth, adminOnly, changeAdminPassword);
 

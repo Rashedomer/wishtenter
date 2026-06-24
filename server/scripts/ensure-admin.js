@@ -9,7 +9,7 @@ const prisma = require('../prisma/client');
 
 async function main() {
   const email = (process.env.ADMIN_EMAIL || 'admin@wishtenter.com').trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || 'admin123';
+  const password = process.env.ADMIN_PASSWORD || 'Wishtenter@Admin2026';
   const username = process.env.ADMIN_USERNAME || 'admin';
   const displayName = process.env.ADMIN_DISPLAY_NAME || 'System Admin';
 

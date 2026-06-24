@@ -217,8 +217,8 @@ const AdminDashboard = () => {
       toast("New passwords do not match", "error");
       return;
     }
-    if (passwordForm.newPassword.length < 6) {
-      toast("Password must be at least 6 characters", "error");
+    if (passwordForm.newPassword.length < 8) {
+      toast("Password must be at least 8 characters", "error");
       return;
     }
     setPasswordSubmitting(true);
@@ -228,7 +228,10 @@ const AdminDashboard = () => {
         newPassword: passwordForm.newPassword,
       });
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      triggerSuccessPopup("Password Updated");
+      triggerSuccessPopup("Password Updated — sign in again");
+      setTimeout(() => {
+        clearSession();
+      }, 1500);
     } catch (err: any) {
       toast(err.response?.data?.message || "Failed to update password", "error");
     } finally {
@@ -672,6 +675,23 @@ const AdminDashboard = () => {
 
             {activeTab === "account" && (
               <div className="space-y-8">
+                <Card className="rounded-[48px] border-none shadow-2xl shadow-gray-200/50 p-8 md:p-10 bg-gradient-to-br from-[#0F172A] to-[#1E293B] text-white">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary">
+                      <Shield size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold tracking-tighter italic">Admin Credentials</h3>
+                      <p className="text-sm text-gray-400 font-medium">
+                        Signed in as <span className="text-white font-semibold">{user?.email}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-6 leading-relaxed">
+                    Update your admin email or password below. After a password change you will be signed out and must log in again.
+                  </p>
+                </Card>
+
                 <Card className="rounded-[48px] border-none shadow-2xl shadow-gray-200/50 p-8 md:p-10 bg-white">
                   <div className="flex items-center gap-4 mb-8">
                     <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
@@ -734,7 +754,7 @@ const AdminDashboard = () => {
                       <Label className="text-[11px] font-bold uppercase tracking-widest text-gray-400">New Password</Label>
                       <PasswordInput
                         required
-                        minLength={6}
+                        minLength={8}
                         value={passwordForm.newPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                         className="h-14 rounded-2xl"
@@ -744,7 +764,7 @@ const AdminDashboard = () => {
                       <Label className="text-[11px] font-bold uppercase tracking-widest text-gray-400">Confirm New Password</Label>
                       <PasswordInput
                         required
-                        minLength={6}
+                        minLength={8}
                         value={passwordForm.confirmPassword}
                         onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                         className="h-14 rounded-2xl"

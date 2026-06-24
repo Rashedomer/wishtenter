@@ -7,6 +7,14 @@ import fs from 'fs'
 
 const PUBLIC_SHARE_SITE = 'https://www.wishtenter.com'
 
+const FAVICON_VERSION = process.env.FAVICON_VERSION || String(Date.now())
+
+function injectFaviconVersion(html: string) {
+  const v = FAVICON_VERSION
+  return html
+    .replace(/href="\/(favicon\.ico|favicon\.svg|favicon-32\.png|logo\.jpeg|pwa-icon-192\.png|pwa-icon-192\.jpeg|pwa-icon-512\.jpeg)"/g, 'href="/$1?v=' + v + '"')
+}
+
 function injectShareFixIntoHtml(html: string, site = PUBLIC_SHARE_SITE) {
   if (!html || html.includes('id="wishtenter-share-fix"')) return html
   const safeSite = String(site).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
@@ -32,7 +40,7 @@ export default defineConfig({
     {
       name: 'inject-share-fix',
       transformIndexHtml(html) {
-        return injectShareFixIntoHtml(html)
+        return injectFaviconVersion(injectShareFixIntoHtml(html))
       },
     },
     {
@@ -72,9 +80,9 @@ export default defineConfig({
         categories: ['social', 'finance', 'lifestyle'],
         icons: [
           {
-            src: '/logo.jpeg',
-            sizes: '512x512',
-            type: 'image/jpeg',
+            src: '/favicon-32.png',
+            sizes: '32x32',
+            type: 'image/png',
             purpose: 'any',
           },
           {

@@ -365,6 +365,22 @@ const deleteCreator = async (req, res) => {
   }
 };
 
+const getAdminAccount = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { id: true, email: true, role: true, isVerified: true, createdAt: true },
+    });
+    if (!user || user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('getAdminAccount error:', err);
+    res.status(500).json({ message: 'Error loading admin account' });
+  }
+};
+
 const changeAdminEmail = async (req, res) => {
   const newEmail = String(req.body.newEmail || '').trim().toLowerCase();
   const currentPassword = req.body.currentPassword;
@@ -421,8 +437,8 @@ const changeAdminPassword = async (req, res) => {
     return res.status(400).json({ message: 'Current and new password are required' });
   }
 
-  if (newPassword.length < 6) {
-    return res.status(400).json({ message: 'New password must be at least 6 characters' });
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'New password must be at least 8 characters' });
   }
 
   try {
@@ -460,6 +476,7 @@ module.exports = {
   getPlatformAnalytics,
   deleteCreator,
   clearCreatorMedia,
+  getAdminAccount,
   changeAdminEmail,
   changeAdminPassword,
 };
