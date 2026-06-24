@@ -12,7 +12,7 @@ const FAVICON_VERSION = process.env.FAVICON_VERSION || String(Date.now())
 function injectFaviconVersion(html: string) {
   const v = FAVICON_VERSION
   return html
-    .replace(/href="\/(favicon\.ico|favicon\.svg|favicon-32\.png|logo\.jpeg|pwa-icon-192\.png|pwa-icon-192\.jpeg|pwa-icon-512\.jpeg)"/g, 'href="/$1?v=' + v + '"')
+    .replace(/href="\/(favicon\.ico|favicon\.svg|favicon-16\.png|favicon-32\.png|wishtenter-icon\.png|logo\.jpeg|pwa-icon-192\.png|pwa-icon-192\.jpeg|pwa-icon-512\.jpeg)"/g, 'href="/$1?v=' + v + '"')
 }
 
 function injectShareFixIntoHtml(html: string, site = PUBLIC_SHARE_SITE) {
@@ -62,8 +62,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null,
-      includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-32.png', 'logo.jpeg', 'pwa-icon-192.jpeg', 'pwa-icon-192.png', 'pwa-icon-512.jpeg'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-16.png', 'favicon-32.png', 'wishtenter-icon.png', 'logo.jpeg', 'pwa-icon-192.jpeg', 'pwa-icon-192.png', 'pwa-icon-512.png', 'pwa-icon-512.jpeg'],
       manifest: {
+        id: '/',
         name: 'Wishtenter',
         short_name: 'Wishtenter',
         description: 'Fund your dreams — receive gifts on your wishlist',
@@ -74,43 +75,42 @@ export default defineConfig({
         orientation: 'portrait',
         scope: '/',
         start_url: '/?source=pwa',
-        launch_handler: {
-          client_mode: 'navigate-existing',
-        },
         categories: ['social', 'finance', 'lifestyle'],
         icons: [
           {
-            src: '/favicon-32.png',
-            sizes: '32x32',
+            src: '/pwa-icon-192.png',
+            sizes: '192x192',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/pwa-icon-192.jpeg',
-            sizes: '192x192',
-            type: 'image/jpeg',
+            src: '/pwa-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any',
           },
           {
-            src: '/pwa-icon-512.jpeg',
+            src: '/pwa-icon-512.png',
             sizes: '512x512',
-            type: 'image/jpeg',
-            purpose: 'any',
-          },
-          {
-            src: '/pwa-icon-512.jpeg',
-            sizes: '512x512',
-            type: 'image/jpeg',
+            type: 'image/png',
             purpose: 'maskable',
           },
         ],
       },
       workbox: {
-        // Never precache index.html — always fetch latest share-fix + bundle
-        navigateFallback: null,
-        globPatterns: ['**/*.{js,css,ico,png,jpg,jpeg,svg,woff2,webmanifest}'],
-        globIgnores: ['**/index.html', '**/404.html'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/assets\//],
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff2,webmanifest}'],
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'pages-cache',
+              networkTimeoutSeconds: 5,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           {
             urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
             handler: 'CacheFirst',

@@ -29,15 +29,21 @@ export function getShareBase(): string {
   return DEFAULT_SHARE_BASE;
 }
 
-/** Preload config from Railway — share base works even before frontend redeploy (via meta tag). */
+/** Preload config — never block first paint (PWA cold start must render immediately). */
 export async function loadRuntimeConfig(): Promise<void> {
   cachedUploadsOrigin = getUploadsOrigin();
   cachedShareBase = getShareBase();
 
   if (import.meta.env.DEV) return;
 
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 4000);
+
   try {
-    const res = await fetch(`${PRODUCTION_BACKEND_ORIGIN}/api/config`, { cache: 'no-store' });
+    const res = await fetch(`${PRODUCTION_BACKEND_ORIGIN}/api/config`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    });
     if (res.ok) {
       const data = (await res.json()) as { uploadsOrigin?: string; shareBase?: string };
       if (data.uploadsOrigin?.startsWith('http')) {
@@ -49,5 +55,7 @@ export async function loadRuntimeConfig(): Promise<void> {
     }
   } catch {
     /* meta tag + DEFAULT_SHARE_BASE fallback */
+  } finally {
+    window.clearTimeout(timeout);
   }
 }

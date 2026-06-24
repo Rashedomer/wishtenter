@@ -4,10 +4,17 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/(favicon.ico|favicon.svg|favicon-32.png|logo.jpeg|pwa-icon-.*)",
+      "source": "/(favicon.ico|favicon.svg|favicon-16.png|favicon-32.png|wishtenter-icon.png|logo.jpeg|pwa-icon-.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/favicon.ico",
+      "destination": "/wishtenter-icon.png",
+      "permanent": false
     }
   ],
   "rewrites": [

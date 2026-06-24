@@ -14,9 +14,6 @@ if (import.meta.env.PROD) {
         setInterval(() => registration.update(), 60 * 60 * 1000);
       }
     },
-    onNeedRefresh() {
-      window.location.reload();
-    },
   });
 }
 
@@ -29,13 +26,14 @@ async function bootstrap() {
     document.documentElement.classList.add('pwa-standalone');
   }
 
-  await loadRuntimeConfig()
-
+  // Render immediately — config loads in background (don't block PWA cold start)
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <App />
     </StrictMode>,
   )
+
+  void loadRuntimeConfig()
 }
 
 bootstrap()
