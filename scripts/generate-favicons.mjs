@@ -1,6 +1,5 @@
 /**
- * Build real favicon.ico + pwa-icon-192.png from logo.jpeg.
- * The old favicon.ico was a JPEG renamed to .ico — browsers ignore it.
+ * Build favicon assets from public/logo.jpeg (Wishtenter gift-box logo).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -37,6 +36,22 @@ const { default: toIco } = await import('to-ico');
 const ico = await toIco(pngPaths.map((p) => fs.readFileSync(p)));
 fs.writeFileSync(path.join(publicDir, 'favicon.ico'), ico);
 
-resizePng(192, path.join(publicDir, 'pwa-icon-192.png'));
+const favicon32 = path.join(publicDir, 'favicon-32.png');
+resizePng(32, favicon32);
 
-console.log('[generate-favicons] wrote favicon.ico and pwa-icon-192.png');
+const pwa192 = path.join(publicDir, 'pwa-icon-192.png');
+resizePng(192, pwa192);
+
+// Keep apple-touch / PWA jpeg in sync with the same logo
+fs.copyFileSync(logo, path.join(publicDir, 'pwa-icon-512.jpeg'));
+resizePng(192, path.join(publicDir, 'pwa-icon-192.jpeg'));
+
+// SVG favicon — embed the real logo so all browsers show the same asset
+const logoBase64 = fs.readFileSync(logo).toString('base64');
+const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" role="img" aria-label="Wishtenter">
+  <image width="64" height="64" href="data:image/jpeg;base64,${logoBase64}"/>
+</svg>
+`;
+fs.writeFileSync(path.join(publicDir, 'favicon.svg'), faviconSvg);
+
+console.log('[generate-favicons] wrote favicon.ico, favicon.svg, favicon-32.png, pwa icons from logo.jpeg');
