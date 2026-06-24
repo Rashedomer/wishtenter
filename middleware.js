@@ -3,7 +3,7 @@
  * Serve OG HTML for profile/share URLs before SPA routing.
  */
 
-import { buildOgHtml, profileOgFromApi, toOgImage } from './lib/ogHtml.js';
+import { buildOgHtml, profileOgFromApi, toOgImage } from './server/lib/ogHtml.js';
 
 const CRAWLER_UA =
   /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedinbot|discordbot|slackbot|embedly|pinterest|redditbot|applebot|bingpreview|googlebot|vkshare|quora|preview|iframely|meta-external/i;
@@ -18,7 +18,7 @@ const BACKEND =
   process.env.BACKEND_URL ||
   'https://wishtenter-system-production.up.railway.app';
 
-import { injectShareFixIntoHtml, PUBLIC_SHARE_SITE } from './lib/shareFixScript.cjs';
+import { injectShareFixIntoHtml, PUBLIC_SHARE_SITE } from './server/lib/shareFixScript.cjs';
 
 const SITE = (process.env.FRONTEND_URL || PUBLIC_SHARE_SITE).replace(/\/$/, '');
 

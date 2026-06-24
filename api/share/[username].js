@@ -1,4 +1,4 @@
-import { buildOgHtml, profileOgFromApi, toOgImage } from '../../lib/ogHtml.js';
+import { buildOgHtml, profileOgFromApi, toOgImage } from '../../server/lib/ogHtml.js';
 
 const BACKEND =
   process.env.META_API_ORIGIN ||

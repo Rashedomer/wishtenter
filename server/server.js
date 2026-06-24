@@ -66,7 +66,7 @@ app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '7d' }));
 console.log(`📁 Uploads directory: ${UPLOADS_DIR}`);
 
 const { getFrontendBase } = require('./utils/siteUrl');
-const { injectShareFixIntoHtml } = require('../lib/shareFixScript.cjs');
+const { injectShareFixIntoHtml } = require('./lib/shareFixScript.cjs');
 
 function injectShareFixHtml(html) {
   return injectShareFixIntoHtml(html, getFrontendBase());
