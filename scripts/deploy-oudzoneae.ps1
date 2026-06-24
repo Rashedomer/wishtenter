@@ -5,8 +5,8 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
-Write-Host "Linking project (pick: oudzoneae-1210s-projects / wishtenter-system)..." -ForegroundColor Yellow
-npx vercel link
+Write-Host "Linking project (pick: oudzoneae-1210s-projects / wishtenter)..." -ForegroundColor Yellow
+npx vercel link --yes --project wishtenter --scope oudzoneae-1210s-projects
 
 Write-Host ""
 Write-Host "Deploying to production (Vercel builds on server)..." -ForegroundColor Cyan

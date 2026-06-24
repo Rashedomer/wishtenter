@@ -3,7 +3,7 @@
  * Serve OG HTML for profile/share URLs before SPA routing.
  */
 
-import { buildOgHtml, profileOgFromApi, toOgImage } from './server/lib/ogHtml.js';
+import { buildOgHtml, profileOgFromApi, toOgImage } from './lib/ogHtml.js';
 
 const CRAWLER_UA =
   /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|twitterbot|linkedinbot|discordbot|slackbot|embedly|pinterest|redditbot|applebot|bingpreview|googlebot|vkshare|quora|preview|iframely|meta-external/i;
@@ -18,7 +18,7 @@ const BACKEND =
   process.env.BACKEND_URL ||
   'https://wishtenter-system-production.up.railway.app';
 
-import { injectShareFixIntoHtml, PUBLIC_SHARE_SITE } from './server/lib/shareFixScript.cjs';
+import { injectShareFixIntoHtml, PUBLIC_SHARE_SITE } from './lib/shareFixScript.js';
 
 const SITE = (process.env.FRONTEND_URL || PUBLIC_SHARE_SITE).replace(/\/$/, '');
 
@@ -103,13 +103,19 @@ export default async function middleware(request) {
       const contentType = response.headers.get('content-type') || '';
       if (response.ok && contentType.includes('text/html')) {
         const html = await response.text();
+        const headers = new Headers(response.headers);
+        headers.set('Content-Type', 'text/html; charset=utf-8');
+        headers.delete('content-length');
+
         if (!html.includes('wishtenter-share-fix')) {
-          const patched = injectShareFixIntoHtml(html, SITE);
-          const headers = new Headers(response.headers);
-          headers.set('Content-Type', 'text/html; charset=utf-8');
-          headers.delete('content-length');
-          return new Response(patched, { status: response.status, headers });
+          return new Response(injectShareFixIntoHtml(html, SITE), {
+            status: response.status,
+            headers,
+          });
         }
+
+        // response.text() consumed the body — must return a fresh Response
+        return new Response(html, { status: response.status, headers });
       }
       return response;
     } catch {
