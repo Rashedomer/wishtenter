@@ -1,17 +1,18 @@
-# Build frontend + API on Railway (monorepo: server/ is service root)
+# Railway backend-only build (frontend is served by Vercel)
+# Root Directory in Railway is set to server/ — no parent directory available
 [phases.setup]
 nixPkgs = ["nodejs_22"]
 
 [phases.install]
 cmds = [
-  "cd .. && npm ci",
   "npm ci",
 ]
+# Note: postinstall automatically runs "prisma generate"
 
 [phases.build]
-cmds = [
-  "cd .. && npm ci && npm run build && test -f server/dist/index.html",
-]
+cmds = []
+# No frontend build needed — Vercel handles the React/Vite frontend
 
 [start]
 cmd = "npm start"
+# npm start → scripts/start-production.js → runs prisma migrate deploy → starts server.js
