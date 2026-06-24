@@ -93,6 +93,7 @@ export default defineConfig({
       },
       workbox: {
         // Never precache index.html — always fetch latest share-fix + bundle
+        navigateFallback: null,
         globPatterns: ['**/*.{js,css,ico,png,jpg,jpeg,svg,woff2,webmanifest}'],
         globIgnores: ['**/index.html', '**/404.html'],
         runtimeCaching: [
