@@ -85,8 +85,14 @@ async function fetchOgHtml(username, search) {
 }
 
 export default async function middleware(request) {
-  const ua = request.headers.get('user-agent') || '';
   const url = new URL(request.url);
+
+  // PWA cold start — serve static index.html without edge fetch/transform
+  if (url.pathname === '/') {
+    return;
+  }
+
+  const ua = request.headers.get('user-agent') || '';
 
   if (CRAWLER_UA.test(ua)) {
     const username = parseUsername(url.pathname);

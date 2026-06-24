@@ -74,7 +74,7 @@ export default defineConfig({
         display_override: ['standalone', 'browser'],
         orientation: 'portrait',
         scope: '/',
-        start_url: '/?source=pwa',
+        start_url: '/',
         categories: ['social', 'finance', 'lifestyle'],
         icons: [
           {
@@ -98,19 +98,13 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/assets\//],
-        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,woff2,webmanifest}'],
+        skipWaiting: false,
+        clientsClaim: false,
+        // Never intercept navigations — SW only caches static assets (fixes blank PWA launch)
+        navigateFallback: null,
+        globPatterns: ['**/*.{js,css,ico,png,jpg,jpeg,svg,woff2,webmanifest}'],
+        globIgnores: ['**/index.html', '**/404.html'],
         runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'pages-cache',
-              networkTimeoutSeconds: 5,
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
           {
             urlPattern: /^https:\/\/api\.dicebear\.com\/.*/i,
             handler: 'CacheFirst',
