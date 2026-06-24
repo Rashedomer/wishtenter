@@ -1,0 +1,17 @@
+# Build frontend + API on Railway (monorepo: server/ is service root)
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = [
+  "cd .. && npm ci",
+  "npm ci",
+]
+
+[phases.build]
+cmds = [
+  "cd .. && npm ci && npm run build && test -f server/dist/index.html",
+]
+
+[start]
+cmd = "npm start"

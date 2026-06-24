@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+
+[env]
+FRONTEND_URL = "https://www.wishtenter.com"
+CORS_ORIGIN = "https://www.wishtenter.com,https://wishtenter.com"
+PUBLIC_SITE_URL = "https://www.wishtenter.com"

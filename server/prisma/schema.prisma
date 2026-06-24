@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CREATOR
+  SUPPORTER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(CREATOR)
+  isVerified Boolean @default(false)
+  verificationToken String?
+  verificationTokenExpires DateTime?
+  resetToken        String?
+  resetTokenExpires DateTime?
+  profile   Profile?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  username     String   @unique
+  displayName  String
+  bio          String?
+  avatarUrl    String?
+  coverUrl     String?
+  balance      Float    @default(0)
+  pendingBalance Float  @default(0)
+  stripeAccountId String? @unique
+  stripeOnboardingComplete Boolean @default(false)
+  socialLinks  Json?    @default("{}")
+  goals        Goal[]
+  withdrawals  Withdrawal[]
+  payoutDetails PayoutDetails?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayName])
+  @@index([createdAt])
+}
+
+model PayoutDetails {
+  id                String   @id @default(uuid())
+  profileId         String   @unique
+  profile           Profile  @relation(fields: [profileId], references: [id])
+  payoutMethod      String   @default("bank") // "bank" or "crypto"
+  accountHolderName String?
+  accountNumber     String?
+  routingCode       String?  // IFSC or Routing
+  bankName          String?
+  cryptoCurrency    String?  // e.g. USDT, BTC, ETH
+  cryptoAddress     String?  // Crypto wallet address
+  updatedAt         DateTime @updatedAt
+}
+
+model Withdrawal {
+  id          String   @id @default(uuid())
+  creatorId   String
+  profile     Profile  @relation(fields: [creatorId], references: [id])
+  amount      Float
+  status      String   @default("pending") // pending, approved, rejected, paid
+  method      String?  // paypal, bank, etc
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([createdAt])
+  details     String?  // paypal email, bank account info
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SystemSettings {
+  id              String @id @default("singleton")
+  commissionRate  Float  @default(0.15) // 15% default
+}
+
+model Favorite {
+  id          String   @id @default(uuid())
+  userId      String
+  @@index([userId])
+  @@index([creatorId])
+  creatorId   String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, creatorId])
+}
+
+model Goal {
+  id            String   @id @default(uuid())
+  creatorId     String
+  profile       Profile  @relation(fields: [creatorId], references: [id])
+  title         String
+  description   String?
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  imageUrl      String?
+  status        String   @default("active") // active, completed, hidden
+  gifts         Gift[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Gift {
+  id               String   @id @default(uuid())
+  supporterId      String?
+  creatorId        String
+  goalId           String
+  amount           Float
+  netAmount        Float    @default(0)
+  commissionAmount Float    @default(0)
+  message          String?
+  status           String   @default("completed") // pending, completed, refunded, failed
+  stripeSessionId  String?  // Stripe Checkout Session ID — used for refund/dispute matching
+  isReleased       Boolean  @default(false)
+  availableAt      DateTime?
+  goal             Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@index([creatorId])
+  @@index([goalId])
+  @@index([supporterId])
+  @@index([status])
+  @@index([isReleased])
+  @@index([createdAt])
+  @@index([stripeSessionId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // gift_received, funds_released, payment_confirmed
+  title     String
+  body      String
+  link      String?
+  read      Boolean  @default(false)
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}

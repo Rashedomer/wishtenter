@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/jpeg" href="/logo.jpeg" />
+    <link rel="apple-touch-icon" href="/pwa-icon-192.jpeg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Wishtenter — fund your dreams with virtual gifts and wishlists" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Wishtenter" />
+    <meta name="backend-origin" content="https://wishtenter-system-production.up.railway.app" />
+    <meta name="share-base" content="https://www.wishtenter.com" />
+
+    <script src="/wishtenter-share-fix.js"></script>
+
+    <script>
+      (function () {
+        var ua = window.navigator.userAgent || '';
+        var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+        var isStandalone =
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true;
+        var root = document.documentElement;
+        if (isStandalone) root.classList.add('pwa-standalone');
+        if (isIOS) root.classList.add('pwa-ios');
+      })();
+    </script>
+    
+    <script>
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        window.dispatchEvent(new CustomEvent('pwa-prompt-available', { detail: e }));
+      });
+    </script>
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.wishtenter.com/" />
+    <meta property="og:title" content="Virtual Wishlist - Fund Dreams Together" />
+    <meta property="og:description" content="Wishtenter connects creators with fans. The secure way to receive virtual gifts and support." />
+    <meta property="og:image" content="https://www.wishtenter.com/logo.jpeg" />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:image" content="https://www.wishtenter.com/logo.jpeg" />
+
+    <title>Virtual Wishlist - Fund Dreams Together</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
