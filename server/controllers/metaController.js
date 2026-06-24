@@ -3,7 +3,7 @@
  * Used by /api/meta, /share, Vercel api/share, and edge middleware.
  */
 const prisma = require('../prisma/client');
-const { normalizeProfile, normalizeGoal } = require('../utils/mediaUrl');
+const { normalizeProfile, normalizeGoal, toAbsoluteMediaUrl } = require('../utils/mediaUrl');
 const { getFrontendBase } = require('../utils/siteUrl');
 
 const RESERVED_SLUGS = new Set([
@@ -21,16 +21,6 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-function toAbsoluteMediaUrl(url) {
-  if (!url) return null;
-  if (String(url).startsWith('http://') || String(url).startsWith('https://')) {
-    return url;
-  }
-  const base = getFrontendBase();
-  const path = url.startsWith('/') ? url : `/${url}`;
-  return `${base}${path}`;
 }
 
 function sanitizeOgText(str) {
@@ -184,10 +174,13 @@ function isProxiedFromFrontend(req) {
   return forwarded.includes('wishtenter.com') || forwarded.includes('vercel.app');
 }
 
-/** Old app copies railway.app/share/… — send crawlers + humans to wishtenter.com for matching previews */
+/** Old app copies railway.app/share/… — redirect browsers, but serve OG HTML for meta fetches. */
 function isDirectBackendShareRequest(req) {
   const host = (req.get('host') || '').toLowerCase();
-  return host.includes('railway.app') && !isProxiedFromFrontend(req);
+  if (!host.includes('railway.app') || isProxiedFromFrontend(req)) return false;
+  const accept = req.get('accept') || '';
+  if (accept.includes('text/html')) return false;
+  return true;
 }
 
 const getShareMeta = async (req, res) => {

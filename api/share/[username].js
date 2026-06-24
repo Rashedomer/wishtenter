@@ -22,21 +22,29 @@ export default async function handler(req, res) {
   try {
     const metaRes = await fetch(
       `${backend}/share/${encodeURIComponent(username)}${wishQuery}`,
-      { headers: { Accept: 'text/html' } }
+      {
+        headers: {
+          Accept: 'text/html',
+          'x-forwarded-host': 'www.wishtenter.com',
+        },
+        redirect: 'manual',
+      }
     );
 
-    if (metaRes.ok) {
+    if (metaRes.status === 200) {
       const html = await metaRes.text();
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-      res.status(200).send(html);
-      return;
+      if (html.includes('og:image') && !html.includes('id="root"')) {
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+        res.status(200).send(html);
+        return;
+      }
     }
 
     const profileRes = await fetch(`${backend}/api/creators/${encodeURIComponent(username)}`);
     if (profileRes.ok) {
       const profile = await profileRes.json();
-      const html = profileOgFromApi(profile, { site: SITE, wishId });
+      const html = profileOgFromApi(profile, { site: SITE, wishId, mediaOrigin: backend });
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
       res.status(200).send(html);

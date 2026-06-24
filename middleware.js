@@ -53,16 +53,25 @@ async function fetchOgHtml(username, search) {
 
   const metaRes = await fetch(
     `${backend}/share/${encodeURIComponent(username)}${wishQuery}`,
-    { headers: { Accept: 'text/html' } }
+    {
+      headers: {
+        Accept: 'text/html',
+        'x-forwarded-host': 'www.wishtenter.com',
+      },
+      redirect: 'manual',
+    }
   );
-  if (metaRes.ok) {
-    return metaRes.text();
+  if (metaRes.status === 200) {
+    const html = await metaRes.text();
+    if (html.includes('og:image') && !html.includes('id="root"')) {
+      return html;
+    }
   }
 
   const profileRes = await fetch(`${backend}/api/creators/${encodeURIComponent(username)}`);
   if (profileRes.ok) {
     const profile = await profileRes.json();
-    return profileOgFromApi(profile, { site: SITE, wishId });
+    return profileOgFromApi(profile, { site: SITE, wishId, mediaOrigin: backend });
   }
 
   return buildOgHtml({

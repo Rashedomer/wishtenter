@@ -9,14 +9,21 @@ export function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-export function toOgImage(url, site = DEFAULT_SITE) {
-  if (!url) return `${site}/logo.jpeg`;
+export function toOgImage(url, site = DEFAULT_SITE, mediaOrigin = null) {
+  if (!url) return `${site.replace(/\/$/, '')}/logo.jpeg`;
   const str = String(url);
   if (str.startsWith('https://res.cloudinary.com/')) {
     return str.replace('/upload/', '/upload/c_fill/w_1200/h_630/f_jpg/q_auto/');
   }
   if (str.startsWith('http://') || str.startsWith('https://')) return str;
-  return `${site}${str.startsWith('/') ? str : `/${str}`}`;
+
+  const path = str.startsWith('/') ? str : `/${str}`;
+  const isMedia = path.startsWith('/api/media/') || path.startsWith('/uploads/');
+  const origin = (isMedia && mediaOrigin ? mediaOrigin : site).replace(/\/$/, '');
+  const mediaPath = path.startsWith('/uploads/')
+    ? path.replace(/^\/uploads\//, '/api/media/')
+    : path;
+  return `${origin}${mediaPath}`;
 }
 
 export function buildOgHtml({ title, description, image, pageUrl, profilePath, site = DEFAULT_SITE }) {
@@ -62,12 +69,13 @@ export function buildOgHtml({ title, description, image, pageUrl, profilePath, s
 <body>
   <h1>${safeTitle}</h1>
   <p>${safeDesc}</p>
+  <img src="${safeImage}" alt="${safeTitle}" width="1200" height="630" />
   <p><a href="${safePath}">Open on Wishtenter</a></p>
 </body>
 </html>`;
 }
 
-export function profileOgFromApi(profile, { site = DEFAULT_SITE, wishId = null } = {}) {
+export function profileOgFromApi(profile, { site = DEFAULT_SITE, wishId = null, mediaOrigin = null } = {}) {
   const username = profile.username;
   const wishQuery = wishId ? `?wish=${encodeURIComponent(wishId)}` : '';
   const profileUrl = `${site}/${encodeURIComponent(username)}${wishQuery}`;
@@ -88,7 +96,7 @@ export function profileOgFromApi(profile, { site = DEFAULT_SITE, wishId = null }
   return buildOgHtml({
     title,
     description: String(description).slice(0, 200),
-    image: toOgImage(image, site),
+    image: toOgImage(image, site, mediaOrigin),
     pageUrl: profileUrl,
     profilePath: profileUrl,
     site,

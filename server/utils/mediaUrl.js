@@ -18,6 +18,30 @@ function getBackendBase() {
   return (process.env.BACKEND_URL || '').replace(/\/$/, '');
 }
 
+function getFrontendBase() {
+  return (process.env.FRONTEND_URL || process.env.PUBLIC_SITE_URL || 'https://www.wishtenter.com').replace(/\/$/, '');
+}
+
+/** Absolute URL for OG previews — media files live on Railway, not Vercel. */
+function toAbsoluteMediaUrl(url) {
+  if (!url) return null;
+  const str = String(url);
+  if (str.startsWith('http://') || str.startsWith('https://')) {
+    return str;
+  }
+
+  const path = str.startsWith('/') ? str : `/${str}`;
+  if (path.startsWith('/api/media/') || path.startsWith('/uploads/')) {
+    const backend = getBackendBase();
+    const mediaPath = path.startsWith('/uploads/')
+      ? path.replace(/^\/uploads\//, '/api/media/')
+      : path;
+    if (backend) return `${backend}${mediaPath}`;
+  }
+
+  return `${getFrontendBase()}${path}`;
+}
+
 function normalizeUploadUrl(url) {
   if (!url) return url;
   const relative = toMediaApiPath(url);
@@ -72,4 +96,6 @@ module.exports = {
   normalizeProfile,
   normalizeGoal,
   assertModeratedImageUrl,
+  getBackendBase,
+  toAbsoluteMediaUrl,
 };
