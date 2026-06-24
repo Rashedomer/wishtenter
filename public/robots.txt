@@ -2,8 +2,10 @@ User-agent: *
 Allow: /
 
 # Allow Google to crawl favicon and icons
+Allow: /favicon.ico
 Allow: /favicon.svg
 Allow: /logo.jpeg
+Allow: /pwa-icon-192.png
 Allow: /pwa-icon-192.jpeg
 Allow: /pwa-icon-512.jpeg
 

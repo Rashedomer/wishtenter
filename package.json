@@ -8,7 +8,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/verify-share-urls.mjs && node scripts/sync-vercel-output.mjs && node scripts/sync-railway-output.mjs",
+    "build": "tsc -b && node scripts/generate-favicons.mjs && vite build && node scripts/verify-share-urls.mjs && node scripts/sync-vercel-output.mjs && node scripts/sync-railway-output.mjs",
     "vercel-build": "npm run build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -48,6 +48,7 @@
     "globals": "^17.5.0",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.2.4",
+    "to-ico": "^1.1.5",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10",

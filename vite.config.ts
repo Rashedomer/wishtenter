@@ -54,7 +54,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null,
-      includeAssets: ['logo.jpeg', 'pwa-icon-192.jpeg', 'pwa-icon-512.jpeg'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'logo.jpeg', 'pwa-icon-192.jpeg', 'pwa-icon-192.png', 'pwa-icon-512.jpeg'],
       manifest: {
         name: 'Wishtenter',
         short_name: 'Wishtenter',
