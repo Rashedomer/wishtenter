@@ -62,9 +62,13 @@ export default defineConfig({
         theme_color: '#3b82f6',
         background_color: '#0a0a0a',
         display: 'standalone',
+        display_override: ['standalone', 'browser'],
         orientation: 'portrait',
         scope: '/',
-        start_url: '/',
+        start_url: '/?source=pwa',
+        launch_handler: {
+          client_mode: 'navigate-existing',
+        },
         categories: ['social', 'finance', 'lifestyle'],
         icons: [
           {
