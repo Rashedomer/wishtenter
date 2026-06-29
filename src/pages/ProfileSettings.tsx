@@ -43,6 +43,12 @@ const ProfileSettings = () => {
     avatarUrl: "",
     coverUrl: "",
   });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -159,6 +165,27 @@ const ProfileSettings = () => {
       toast(err.response?.data?.message || "Failed to update payout settings", "error");
     } finally {
       setPayoutLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast("New passwords do not match", "error");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await api.post("/auth/change-password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      toast("Password changed successfully", "success");
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err: any) {
+      toast(err.response?.data?.message || "Failed to change password", "error");
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -513,6 +540,71 @@ const ProfileSettings = () => {
               </Card>
           </div>
         )}
+
+        <div className="space-y-6 sm:space-y-8 mt-6 sm:mt-8">
+          <Card className="rounded-2xl border border-border shadow-sm overflow-hidden bg-card">
+            <CardContent className="p-5 sm:p-8 md:p-10">
+              <div className="mb-6 sm:mb-8 border-b border-border pb-6">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">Security</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight flex flex-wrap items-center gap-2">
+                  Change Password
+                </h2>
+                <p className="text-muted-foreground font-medium text-sm sm:text-base mt-2">Update your account password to stay secure.</p>
+              </div>
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-1 gap-5 sm:gap-8 max-w-md">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Current Password</Label>
+                    <Input 
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                      className="h-12 rounded-lg bg-muted text-foreground border-none focus:bg-background transition-all font-medium"
+                      required
+                      placeholder="Enter current password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">New Password</Label>
+                    <Input 
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                      className="h-12 rounded-lg bg-muted text-foreground border-none focus:bg-background transition-all font-medium"
+                      required
+                      minLength={6}
+                      placeholder="Enter new password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground ml-1">Confirm New Password</Label>
+                    <Input 
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                      className="h-12 rounded-lg bg-muted text-foreground border-none focus:bg-background transition-all font-medium"
+                      required
+                      minLength={6}
+                      placeholder="Confirm new password"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 sm:pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={passwordLoading}
+                    className="w-full sm:w-auto h-12 px-6 sm:px-10 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm flex items-center justify-center gap-2 sm:gap-3 cursor-pointer"
+                  >
+                    {passwordLoading ? <Loader2 className="animate-spin shrink-0" /> : <Save className="shrink-0 w-4 h-4" />}
+                    <span className="leading-tight">Change Password</span>
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );

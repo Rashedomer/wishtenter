@@ -73,7 +73,11 @@ const signup = async (req, res) => {
     });
 
     // Send OTP Verification Email
-    await sendVerificationEmail(email, verificationOtp);
+    const emailResult = await sendVerificationEmail(email, verificationOtp);
+    if (!emailResult.success) {
+      console.error('Failed to send verification email:', emailResult.error);
+      return res.status(500).json({ message: 'Failed to send OTP email. Please check server email configuration.' });
+    }
 
     res.status(201).json({ message: 'OTP sent to your email. Please verify to continue.', email });
   } catch (err) {
@@ -163,7 +167,11 @@ const resendEmailOTP = async (req, res) => {
       data: { verificationToken: otp, verificationTokenExpires: expires },
     });
 
-    await sendVerificationEmail(email, otp);
+    const emailResult = await sendVerificationEmail(email, otp);
+    if (!emailResult.success) {
+      console.error('Failed to resend verification email:', emailResult.error);
+      return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+    }
     res.json({ message: 'New OTP sent to your email' });
   } catch (err) {
     res.status(500).json({ message: 'Error resending OTP' });
@@ -231,7 +239,11 @@ const forgotPassword = async (req, res) => {
       }
     });
 
-    await sendPasswordResetEmail(email, otp);
+    const emailResult = await sendPasswordResetEmail(email, otp);
+    if (!emailResult.success) {
+      console.error('Failed to send password reset email:', emailResult.error);
+      return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+    }
     res.json({ message: 'OTP sent to your email' });
   } catch (err) {
     res.status(500).json({ message: 'Error sending OTP' });
@@ -303,4 +315,34 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { signup, login, getMe, verifyEmail, verifyEmailOTP, resendEmailOTP, forgotPassword, verifyOTP, resetPassword };
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current and new password are required' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.userId } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ message: 'Error changing password' });
+  }
+};
+
+module.exports = { signup, login, getMe, verifyEmail, verifyEmailOTP, resendEmailOTP, forgotPassword, verifyOTP, resetPassword, changePassword };
