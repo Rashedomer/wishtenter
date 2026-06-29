@@ -1,32 +1,55 @@
 const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const { getFrontendBase } = require('./siteUrl');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const sendEmail = async (to, subject, html) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.error('[Email] RESEND_API_KEY is not set — cannot send:', subject, 'to', to);
-    return { success: false, error: new Error('RESEND_API_KEY not configured') };
-  }
-
-  try {
-    const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Wishtenter <onboarding@resend.dev>',
-      to: [to],
-      subject: subject,
-      html: html,
-    });
-
-    if (error) {
-      console.error('Email error:', error);
-      return { success: false, error };
+  // ─── Method 1: Resend API ─────────────────────────────────────────────────
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { data, error } = await resend.emails.send({
+        from: process.env.EMAIL_FROM || 'Wishtenter <onboarding@resend.dev>',
+        to: [to],
+        subject: subject,
+        html: html,
+      });
+      if (!error) {
+        console.log('[Email] Sent via Resend to', to);
+        return { success: true, data };
+      }
+      console.warn('[Email] Resend failed:', JSON.stringify(error));
+    } catch (err) {
+      console.warn('[Email] Resend exception:', err.message);
     }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error('Email catch error:', err);
-    return { success: false, error: err };
   }
+
+  // ─── Method 2: SMTP Fallback (Gmail / cPanel) ─────────────────────────────
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpUser && smtpPass) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false },
+      });
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM || `Wishtenter <${smtpUser}>`,
+        to,
+        subject,
+        html,
+      });
+      console.log('[Email] Sent via SMTP to', to);
+      return { success: true };
+    } catch (err) {
+      console.error('[Email] SMTP failed:', err.message);
+    }
+  }
+
+  console.error('[Email] All delivery methods failed for:', to, '| Subject:', subject);
+  return { success: false, error: new Error('All email delivery methods failed') };
 };
 
 const sendVerificationEmail = async (to, otp) => {
