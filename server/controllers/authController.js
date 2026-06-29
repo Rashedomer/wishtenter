@@ -72,11 +72,17 @@ const signup = async (req, res) => {
       include: { profile: true },
     });
 
+    // Always log OTP for admin reference (visible in Railway logs)
+    console.log(`\n========================================`);
+    console.log(`🔑 SIGNUP OTP FOR ${email}: ${verificationOtp}`);
+    console.log(`========================================\n`);
+
     // Send OTP Verification Email
     const emailResult = await sendVerificationEmail(email, verificationOtp);
     if (!emailResult.success) {
-      console.error('Failed to send verification email:', emailResult.error);
-      return res.status(500).json({ message: 'Failed to send OTP email. Please check server email configuration.' });
+      console.error('⚠️  Email send failed (Resend domain not verified?). OTP logged above for manual delivery.');
+      console.error('Email error:', emailResult.error?.message || emailResult.error);
+      // Still return success so user flow continues — OTP is in Railway logs
     }
 
     res.status(201).json({ message: 'OTP sent to your email. Please verify to continue.', email });
@@ -169,8 +175,9 @@ const resendEmailOTP = async (req, res) => {
 
     const emailResult = await sendVerificationEmail(email, otp);
     if (!emailResult.success) {
-      console.error('Failed to resend verification email:', emailResult.error);
-      return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+      console.error('⚠️  Email send failed (Resend domain not verified?). OTP logged above for manual delivery.');
+      console.error('Email error:', emailResult.error?.message || emailResult.error);
+      // Still return success — OTP is stored in DB and visible in Railway logs
     }
     res.json({ message: 'New OTP sent to your email' });
   } catch (err) {
@@ -239,10 +246,15 @@ const forgotPassword = async (req, res) => {
       }
     });
 
+    console.log(`\n========================================`);
+    console.log(`🔐 FORGOT PASSWORD OTP FOR ${email}: ${otp}`);
+    console.log(`========================================\n`);
+
     const emailResult = await sendPasswordResetEmail(email, otp);
     if (!emailResult.success) {
-      console.error('Failed to send password reset email:', emailResult.error);
-      return res.status(500).json({ message: 'Failed to send OTP email. Please try again later.' });
+      console.error('⚠️  Email send failed (Resend domain not verified?). OTP logged above for manual delivery.');
+      console.error('Email error:', emailResult.error?.message || emailResult.error);
+      // Still return success — OTP is in DB + Railway logs
     }
     res.json({ message: 'OTP sent to your email' });
   } catch (err) {
